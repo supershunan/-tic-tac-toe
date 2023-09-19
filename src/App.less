@@ -1,0 +1,72 @@
+.square {
+    background: #fff;
+    border: 1px solid #999;
+    float: left;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 34px;
+    height: 34px;
+    margin-right: -1px;
+    margin-top: -1px;
+    padding: 0;
+    text-align: center;
+    width: 34px;
+}
+
+.square-gobang {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    background: #fff;
+    position: relative;
+    
+    .diagonal-line {
+        background-color: #000;
+    }
+      
+    .diagonal-line1 {
+        width: 1px;
+        height: 34px;
+        position: relative;
+        top: -2px;
+        left: 50%;
+        transform: translate(-1px, 0);
+    }
+      
+    .diagonal-line2 {
+        width: 34px;
+        height: 1px;
+        position: relative;
+        top: -50%;
+        left: -7px;
+        transform: translate(0px, -5px);
+    }
+    .text {
+        position: absolute;
+        position: absolute;
+        top: -10px;
+        z-index: 99;
+    }
+}
+
+.board-row {
+    display: flex;
+}
+
+.user {
+    margin-bottom: 10px;
+}
+
+.game {
+    .game-btn {
+        margin-bottom: 20px;
+    }
+    .game-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .game-info {
+            margin-left: 20px;
+        }
+    }
+}

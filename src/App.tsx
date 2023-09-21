@@ -51,7 +51,7 @@ const Square: React.FC<SquareProps> = ({ value, onSquareClick, pieceType }) => {
  * @param resetWinner 重置winner的中介
  * @returns
  */
-const Board: React.FC<BoardProps> = ({ pieces, pieceType, squares, xIsNext, resetWinner, onPlay }) => {
+const Board: React.FC<BoardProps> = ({ pieces, pieceType, squares, xIsNext, resetWinner, onPlay, sliceCurentsXY }) => {
     // render 棋盘的时候判断获胜者，winner 需要在重新开始和切换历史数据进行重置在父组件通过变量判断进行重置
     const [winner, setWinner] = useState<string | null | undefined>(null);
     let status: string;
@@ -74,25 +74,33 @@ const Board: React.FC<BoardProps> = ({ pieces, pieceType, squares, xIsNext, rese
      * @returns
      */
     const handleClick = (value: number, currentXY: Array<number>) => {
-        if (winner || squares[value]) {
+        if (winner || squares.get(value)) {
             return;
         }
-        const nextSquares = squares.slice();
-        if (pieceType) {
-            xIsNext ? nextSquares[value] = 'X' : nextSquares[value] = 'O';
-        } else {
-            xIsNext ? nextSquares[value] = '⚫' : nextSquares[value] = '⚪';
-        }
+        
+        const piecesData = {
+            direction: currentXY,
+            content: '',
+            key: value
+        };
+        const newMap = new Map(squares);
         const piecesTypeNum = pieceType ? 3 : 5;
+        if (pieceType) {
+            xIsNext ? piecesData.content = 'X' : piecesData.content = 'O';
+        } else {
+            xIsNext ? piecesData.content = '⚫' : piecesData.content = '⚪';
+        }
+        newMap.set(value, piecesData)
+
         // 使用封装好的棋盘hook
-        const win = usePieces(nextSquares, pieces, piecesTypeNum, currentXY);
+        const win = usePieces(newMap, pieces, piecesTypeNum, currentXY);
         if (win) {
             setWinner(win);
-            onPlay(nextSquares);
+            onPlay(newMap, currentXY);
             return;
         }
         // 添加新数组
-        onPlay(nextSquares);
+        onPlay(newMap, currentXY);
     };
 
     const listSquars = Array.from({ length: pieces }, (__, index) => (
@@ -103,7 +111,7 @@ const Board: React.FC<BoardProps> = ({ pieces, pieceType, squares, xIsNext, rese
                 return (
                     <Square
                         key={num}
-                        value={squares[num]}
+                        value={sliceCurentsXY.includes([index, smallI].join('')) ? null : squares.get(num)?.content}
                         pieceType={pieceType}
                         onSquareClick={() => handleClick(num, [index, smallI])}
                     />
@@ -125,19 +133,21 @@ const Board: React.FC<BoardProps> = ({ pieces, pieceType, squares, xIsNext, rese
  * @returns
  */
 const Game: React.FC<GameProps> = ({ pieceType, pieces }) => {
-    const [history, setHistory] = useState([Array(pieces * pieces).fill(null)]);
-    // 记录历史数据
     const [currentMove, setCurrentMove] = useState(0);
     const xIsNext = currentMove % 2 === 0;
-    const currentSquares = history[currentMove];
     const [resetWinner, setResetWinner] = useState(false);
+    const [histtoryMap, setHisttoryMap] = useState(new Map());
+    const [curentsXY, setCurentsXY] = useState([]);
+    const [sliceCurentsXY, setSliceCurentsXY ]= useState([]);
 
     /**
      * 重新初始化
      */
     const initGame = () => {
-        setHistory([Array(pieces * pieces).fill(null)]);
+        setHisttoryMap(new Map());
         setCurrentMove(0);
+        setCurentsXY([]);
+        setSliceCurentsXY([]);
     };
     /**
      * 重新开始
@@ -150,22 +160,25 @@ const Game: React.FC<GameProps> = ({ pieceType, pieces }) => {
      * 处理当前棋盘数组
      * @param nextSquares
      */
-    const handlePlay = (nextSquares: Array<string | null>) => {
-        const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
-        setHistory(nextHistory);
-        setCurrentMove(nextHistory.length - 1);
+    const handlePlay = (nextSquares, currentXY) => {
+        setCurentsXY((value) => {
+            return [...value, currentXY.join('')]
+        })
+        setHisttoryMap(new Map(nextSquares));
+        setCurrentMove(nextSquares.size);
     };
     /**
      * 历史点击
      * @param nextMove 步骤
      */
     const jumpTo = (nextMove: number) => {
-        setCurrentMove(nextMove);
+        setSliceCurentsXY(curentsXY.slice(nextMove))
         setResetWinner(!resetWinner);
+        console.log(curentsXY)
     };
 
     // 历史步骤
-    const moves = history.map((squares: Array<string | null>, move: number) => {
+    const moves = Array(currentMove+1).fill(null).map((squares: Array<string | null>, move: number) => {
         let description;
         if (move > 0) {
             description = `Go to move # ${move}`;
@@ -190,7 +203,7 @@ const Game: React.FC<GameProps> = ({ pieceType, pieces }) => {
         <div className="game">
             <div className="game-content">
                 <div className="game-board">
-                    <Board pieces={pieces} pieceType={pieceType} squares={currentSquares} xIsNext={xIsNext} resetWinner={resetWinner} onPlay={handlePlay} />
+                    <Board pieces={pieces} pieceType={pieceType} squares={histtoryMap} xIsNext={xIsNext} resetWinner={resetWinner} onPlay={handlePlay} sliceCurentsXY={sliceCurentsXY} />
                 </div>
                 <div className="game-info">
                     <button className="game-btn" onClick={reStart}>重新开始</button>

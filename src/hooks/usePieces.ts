@@ -12,6 +12,17 @@ const chunkArray = (array: Array<string | null>, chunkSize: number) => {
 
     return result;
 };
+const chunkMapArray = (peicesMap: any, chunkSize: number) => {
+    const result = [];
+    Array.from({length: chunkSize*chunkSize}, (__, index) => {
+        if(peicesMap.has(index)) {
+            result.push(peicesMap.get(index).content);
+        }else {
+            result.push(null);
+        }
+    })
+    return chunkArray(result, chunkSize)
+}
 /**
  * 判断各类N字棋是否胜出
  * @param {Array<string | null>} ary 棋盘格的数组
@@ -21,7 +32,7 @@ const chunkArray = (array: Array<string | null>, chunkSize: number) => {
  * @returns {string | null} 返回棋子值
  */
 const usePieces = (ary: Array<string | null>, pieces: number, piecesTypeNum: number, currentXY: Array<number>) => {
-    const newAry = chunkArray(ary, pieces);
+    const newAry = chunkMapArray(ary, pieces);
     const [currentX, currentY] = currentXY;
     const target = newAry[currentX][currentY];
     let result;

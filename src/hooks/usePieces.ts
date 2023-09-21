@@ -35,7 +35,7 @@ const usePieces = (ary: Array<string | null>, pieces: number, piecesTypeNum: num
 
     for (const [xx, yy] of directions) {
         const count = 1 + deepRecursion(currentX + xx, currentY + yy, xx, yy) + deepRecursion(currentX - xx, currentY - yy, -xx, -yy);
-        if (count === piecesTypeNum) {
+        if (count >= piecesTypeNum) {
             result = target;
             break;
         }

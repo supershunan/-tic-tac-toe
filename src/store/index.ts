@@ -1,10 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
-import piecesData from './pieces/pieces-data';
+import ticTacORgoBangSice from './ticTac/ticTacSlice';
 
 const store = configureStore({
   reducer: {
-    piecesData
+    ticTacORgoBang: ticTacORgoBangSice,
   },
 });
 
-export default store;
+export default store

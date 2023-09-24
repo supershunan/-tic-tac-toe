@@ -9,8 +9,8 @@ interface ChooseGameStateType {
     pieceType: boolean;
 }
 interface SliceProps {
-    historyTicMap: Array<any>;
-    historyGoBangMap: Array<any>;
+    historyTicMap: [number, { direction: number[], content: string, key: number }][];
+    historyGoBangMap: [number, { direction: number[], content: string, key: number }][];
     currentTicMove: number;
     currentGoBangMove: number;
     pieceType: boolean;
@@ -21,7 +21,7 @@ interface SliceProps {
 }
 interface GamePropsType extends ChooseGameStateType {
     ticTacORgoBang: SliceProps;
-    saveHistory: (data: Array<any>) => void;
+    saveHistory: (data: Array<Array<number | { direction: Array<number>, content: string, key: number }>>) => void;
     setPieceType: (data: boolean) => void;
     setCurentMove: (data: number) => void;
     setCurrentsXY: (data: Array<string | null>) => void;
@@ -30,26 +30,47 @@ interface GamePropsType extends ChooseGameStateType {
 
 interface GameStateType extends ChooseGameStateType {
     currentMove: number;
-    historyMap: Map<number, Array<string | null>>;
+    historyMap:  Map<number, { direction: Array<number>, content: string, key: number }>;
     currentsXY: Array<string | null>;
     sliceCurentsXY: Array<string | null>;
     resetWinner: boolean;
 }
 
 interface BoardStateType extends ChooseGameStateType {
-    squares: Map<number, Array<string | null>>;
-    xIsNext: boolean;
+    squares:  Map<number, { direction: Array<number>, content: string, key: number }>;
     resetWinner: boolean;
-    onPlay: (value: Map<number, Array<string | null>>, currentXY: Array<number>) => void;
+    onPlay: (value:  Map<number, { direction: Array<number>, content: string, key: number }>, currentXY: Array<number>) => void;
     sliceCurentsXY: Array<string | null>;
+    setSliceCurrentsXY: (data: Array<string | null>) => void;
 }
 
 interface SquareStateType {
     pieceType: boolean;
-    value: string | null;
+    value: string | null | undefined;
     onSquareClick: () => void;
 }
-
+/**
+ * redux的数据
+ * @param state redux的store
+ * @returns
+ */
+const mapStateToProps = (state: { ticTacORgoBang: SliceProps }) => {
+    return { ticTacORgoBang: state.ticTacORgoBang };
+};
+/**
+ * redux的同步方法
+ * @param dispatch 回调的方法
+ * @returns
+ */
+const mapDispatchToProps = (dispatch: (arg0: { payload: any, type: 'ticTacORgoBang/saveHistory' | 'ticTacORgoBang/setPieceType' | 'ticTacORgoBang/setCurentMove' | 'ticTacORgoBang/setCurrentsXY' | 'ticTacORgoBang/setSliceCurrentsXY' }) => any) => {
+    return {
+        saveHistory: (data: Array<Array<number | { direction: Array<number>, content: string, key: number }>>) => dispatch(saveHistory(data)),
+        setPieceType: (data: boolean) => dispatch(setPieceType(data)),
+        setCurentMove: (data: number) => dispatch(setCurentMove(data)),
+        setCurrentsXY: (data: Array<string | null>) => dispatch(setCurrentsXY(data)),
+        setSliceCurrentsXY: (data: Array<string | null>) => dispatch(setSliceCurrentsXY(data)),
+    };
+};
 
 /**
  * 格子
@@ -68,9 +89,8 @@ class Square extends React.Component<SquareStateType, {}> {
     shouldComponentUpdate (nextProps: Readonly<SquareStateType>): boolean {
         if (nextProps.value === this.props.value && nextProps.pieceType === this.props.pieceType && nextProps.onSquareClick === this.props.onSquareClick) {
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
     render (): React.ReactNode {
         const { value, pieceType, onSquareClick } = this.props;
@@ -94,19 +114,43 @@ class Square extends React.Component<SquareStateType, {}> {
 class Board extends React.Component<BoardStateType, {winner: string | null | undefined}> {
     constructor (props: BoardStateType) {
         super(props);
-        this.state = {
-            winner: null,
-        };
+        this.state = { winner: null };
     }
+
+    /**
+     * 切割Map,删除Map类型指定的后几项
+     * @param map Map类型的数据结构
+     * @param n 删除的后几项
+     */
+    deleteLastNEntries (map:  Map<number, { direction: Array<number>, content: string, key: number }>, num: number): void {
+        const keysToDelete = Array.from(map.keys()).slice(-num);
+
+        keysToDelete.forEach(key => {
+            map.delete(key);
+        });
+    }
+
     /**
      *
      * @param prevProps
      */
     componentDidUpdate (prevProps: Readonly<BoardStateType>): void {
         if (this.props.resetWinner !== prevProps.resetWinner) {
-            this.setState({
-                winner: null,
-            });
+            this.setState({ winner: null });
+
+            // 切换游戏类型，判断当前游戏记录的胜负状态
+            const { pieces, pieceType, squares, sliceCurentsXY } = this.props;
+            const piecesTypeNum = pieceType ? 3 : 5;
+            const newSquares = new Map(squares);
+            sliceCurentsXY.length > 0 && this.deleteLastNEntries(newSquares, sliceCurentsXY.length);
+            const lastEntry = [...newSquares.entries()].pop();
+
+            if (lastEntry) {
+                const win = usePieces(newSquares, pieces, piecesTypeNum, lastEntry[1].direction);
+                if (win) {
+                    this.setState({ winner: win });
+                }
+            }
         }
     }
 
@@ -115,32 +159,62 @@ class Board extends React.Component<BoardStateType, {winner: string | null | und
      * @param value 点击的第几个
      * @returns
      */
-    handleClick = (value: number, currentXY: Array<number>) => {
-        const { pieces, pieceType, xIsNext, squares, onPlay } = this.props;
+    handleClick = (value: number, currentXY:Array<number>) => {
+        const { pieces, pieceType, squares, onPlay, sliceCurentsXY } = this.props;
+        const piecesData: {direction:Array<number>, content: string, key: number} = {
+            direction: currentXY,
+            content: '',
+            key: value,
+        };
+        const piecesTypeNum = pieceType ? 3 : 5;
+        // 计算了当前棋子是第几步并用于显示棋子类型
+        const currentPieceType = (squares.size - sliceCurentsXY.length) % 2 === 0;
+
+        // 点击历史记录后，添加棋子和判断胜负
+        if (sliceCurentsXY.length > 0 && squares.size > 0) {
+            const newSquares = new Map(squares);
+            // 获取点击历史记录当前的historyMap
+            this.deleteLastNEntries(newSquares, sliceCurentsXY.length);
+
+            if (pieceType) {
+                currentPieceType  ? piecesData.content = 'X' : piecesData.content = 'O';
+            } else {
+                currentPieceType  ? piecesData.content = '⚫' : piecesData.content = '⚪';
+            }
+            newSquares.set(value, piecesData);
+
+            // 使用封装好的棋盘hook
+            const win = usePieces(newSquares, pieces, piecesTypeNum, currentXY);
+
+            this.props.setSliceCurrentsXY([]);
+            this.setState({ winner: win });
+            // 需要加到异步任务中，来获取最新的sliceCurentsXY
+            setTimeout(() => {
+                onPlay(newSquares, currentXY);
+            }, 0);
+
+            return;
+        }
+
         if (this.state.winner || squares.get(value)) {
             return;
         }
 
-        const piecesData: {direction: Array<number>, content: string | null, key: number} = {
-            direction: currentXY,
-            content: '',
-            key: value
-        };
+        // 正常添加棋子和判断胜负
         const newMap = new Map(squares);
-        const piecesTypeNum = pieceType ? 3 : 5;
+
         if (pieceType) {
-            xIsNext ? piecesData.content = 'X' : piecesData.content = 'O';
+            currentPieceType  ? piecesData.content = 'X' : piecesData.content = 'O';
         } else {
-            xIsNext ? piecesData.content = '⚫' : piecesData.content = '⚪';
+            currentPieceType  ? piecesData.content = '⚫' : piecesData.content = '⚪';
         }
-        newMap.set(value, piecesData)
+        newMap.set(value, piecesData);
 
         // 使用封装好的棋盘hook
         const win = usePieces(newMap, pieces, piecesTypeNum, currentXY);
+
         if (win) {
-         this.setState({
-                winner: win,
-            });
+            this.setState({ winner: win });
             onPlay(newMap, currentXY);
             return;
         }
@@ -149,16 +223,18 @@ class Board extends React.Component<BoardStateType, {winner: string | null | und
     };
 
     render (): React.ReactNode {
-        const { pieces, pieceType, squares, xIsNext, sliceCurentsXY } = this.props;
-
+        const { pieces, pieceType, squares, sliceCurentsXY } = this.props;
         let status: string;
+        // 计算了当前棋子是第几步并用于显示棋子类型
+        const currentPieceType = (squares.size - sliceCurentsXY.length) % 2 === 0;
+
         if (this.state.winner) {
             status = `获胜者为: ${this.state.winner}`;
         } else {
             if (pieceType) {
-                status = `本次下棋者为: ${(xIsNext ? 'X' : 'O')}`;
+                status = `本次下棋者为: ${(currentPieceType ? 'X' : 'O')}`;
             } else {
-                status = `本次下棋者为: ${(xIsNext ? '⚫' : '⚪')}`;
+                status = `本次下棋者为: ${(currentPieceType ? '⚫' : '⚪')}`;
             }
         }
 
@@ -187,6 +263,7 @@ class Board extends React.Component<BoardStateType, {winner: string | null | und
         );
     }
 }
+const BoardComponent = connect(mapStateToProps, mapDispatchToProps)(Board);
 
 /**
  * 游戏主体
@@ -209,7 +286,7 @@ class Game extends React.Component<GamePropsType, GameStateType> {
      */
     initGame = () => {
         this.setState({
-            resetWinner: false,
+            resetWinner: !this.state.resetWinner,
             pieces: this.props.pieces,
             pieceType: this.props.pieceType,
             historyMap: this.props.pieceType ? new Map(this.props.ticTacORgoBang.historyTicMap) : new Map(this.props.ticTacORgoBang.historyGoBangMap),
@@ -219,7 +296,7 @@ class Game extends React.Component<GamePropsType, GameStateType> {
         });
     };
     /**
-     * 重新开始 
+     * 重新开始
      */
     reStart = () => {
         this.setState({
@@ -236,11 +313,17 @@ class Game extends React.Component<GamePropsType, GameStateType> {
      * 处理当前棋盘数组
      * @param nextSquares
      */
-    handlePlay = (nextSquares: Map<number, Array<string | null>>, currentXY: Array<number>) => {
+    handlePlay = (nextSquares: Map<number, { direction: Array<number>, content: string, key: number }>) => {
+        const newCurrentXY: Array<string> = [];
+        nextSquares.forEach((value) => {
+            const currentStr = value.direction;
+            newCurrentXY.push(currentStr.join(''));
+        });
         this.setState({
             currentMove: nextSquares.size,
             historyMap: new Map(nextSquares),
-            currentsXY: [...this.state.currentsXY, currentXY.join('')],
+            currentsXY: newCurrentXY,
+            sliceCurentsXY: this.props.pieceType ? this.props.ticTacORgoBang.sliceCurentsTicXY : this.props.ticTacORgoBang.sliceCurentsGoBangXY,
         });
     };
     /**
@@ -259,55 +342,47 @@ class Game extends React.Component<GamePropsType, GameStateType> {
      * @param preProps
      */
     componentDidUpdate (preProps: GamePropsType) {
-        if (this.props.pieceType !== preProps.pieceType && 
+        if (this.props.pieceType !== preProps.pieceType &&
             this.props.pieces !== preProps.pieces
         ) {
-            console.log(this.props.pieceType + 'componentDidUpdate')
             // 数据存入 redux
             this.props.saveHistory(Array.from(this.state.historyMap));
             // 棋子移动的步数
             this.props.setCurentMove(this.state.currentMove);
             // 历史记录清单
-            this.props.setSliceCurrentsXY(this.state.sliceCurentsXY)
+            this.props.setSliceCurrentsXY(this.state.sliceCurentsXY);
             // 当前点击的历史记录位置
             this.props.setCurrentsXY(this.state.currentsXY);
-            this.props.setPieceType(this.props.pieceType)
+            this.props.setPieceType(this.props.pieceType);
             // 异步执行
             this.initGame();
-        }
-
-        if(this.props.pieceType !== preProps.pieceType) {
-            this.setState({
-                resetWinner: this.state.resetWinner,
-            });
         }
     }
 
     render (): React.ReactNode {
         const { pieceType, currentMove, resetWinner, historyMap, sliceCurentsXY } = this.state;
-        console.log(pieceType)
-        const xIsNext: boolean = currentMove % 2 === 0;
+
         // 历史步骤
-        const moves = Array(currentMove + 1).fill(null).map((squares: Array<string | null>, move: number) => {
-            let description;
-            if (move > 0) {
-                description = `Go to move # ${move}`;
-            } else {
-                description = 'Go to game start';
-            }
-            return (
-                <li key={move}>
-                    <button onClick={() => this.jumpTo(move)}>{description}</button>
-                </li>
-            );
-        });
+        const moves = Array(currentMove + 1).fill(null)
+            .map((squares: Array<string | null>, move: number) => {
+                let description;
+                if (move > 0) {
+                    description = `Go to move # ${move}`;
+                } else {
+                    description = 'Go to game start';
+                }
+                return (
+                    <li key={move}>
+                        <button onClick={() => this.jumpTo(move)}>{description}</button>
+                    </li>
+                );
+            });
 
         return (
             <div className="game">
                 <div className="game-content">
                     <div className="game-board">
-                        <Board pieces={this.state.pieces} pieceType={pieceType} squares={historyMap} 
-                        xIsNext={xIsNext} resetWinner={resetWinner} onPlay={this.handlePlay} sliceCurentsXY={sliceCurentsXY} />
+                        <BoardComponent pieces={this.state.pieces} pieceType={pieceType} squares={historyMap} resetWinner={resetWinner} sliceCurentsXY={sliceCurentsXY} onPlay={this.handlePlay} />
                     </div>
                     <div className="game-info">
                         <button className="game-btn" onClick={this.reStart}>重新开始</button>
@@ -318,21 +393,7 @@ class Game extends React.Component<GamePropsType, GameStateType> {
         );
     }
 }
-const mapStateToProps = (state: { ticTacORgoBang: SliceProps; }) => {
-    console.log(state)
-    return {
-        ticTacORgoBang: state.ticTacORgoBang
-    };
-};
-const mapDispatchToProps = (dispatch: any) => {
-    return {
-        saveHistory: (data: Array<any>) => dispatch(saveHistory(data)),
-        setPieceType: (data: boolean) => dispatch(setPieceType(data)),
-        setCurentMove: (data: number) => dispatch(setCurentMove(data)),
-        setCurrentsXY: (data: Array<string | null>) => dispatch(setCurrentsXY(data)),
-        setSliceCurrentsXY: (data: Array<string | null>) => dispatch(setSliceCurrentsXY(data)),
-    }
-}
+
 const GameComponent = connect(mapStateToProps, mapDispatchToProps)(Game);
 
 

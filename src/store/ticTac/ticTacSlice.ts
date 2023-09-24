@@ -1,9 +1,9 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 
 interface SliceProps {
-    historyTicMap: Array<any>;
-    historyGoBangMap: Array<any>;
+    historyTicMap: Array<Array<number | { direction: Array<number>, content: string, key: number }>>;
+    historyGoBangMap: Array<Array<number | { direction: Array<number>, content: string, key: number }>>;
     currentTicMove: number;
     currentGoBangMove: number;
     pieceType: boolean;
@@ -23,7 +23,7 @@ const initialState: SliceProps = {
     currentsGoBangXY: [],
     sliceCurentsTicXY: [],
     sliceCurentsGoBangXY: [],
-}
+};
 
 const ticTacORgoBangSice = createSlice({
     name: 'ticTacORgoBang',
@@ -31,36 +31,36 @@ const ticTacORgoBangSice = createSlice({
     reducers: {
         // redux 里的 state 是根据之前的数据进行判断的，不会用最新的值
         saveHistory: (state, action) => {
-            if(state.pieceType) {
-                state.historyTicMap = action.payload
-            }else {
-                state.historyGoBangMap = action.payload
+            if (state.pieceType) {
+                state.historyTicMap = action.payload;
+            } else {
+                state.historyGoBangMap = action.payload;
             }
         },
         setPieceType: (state, action) => {
-            state.pieceType = action.payload
+            state.pieceType = action.payload;
         },
         setCurentMove: (state, action) => {
-            if(state.pieceType) {
-                state.currentTicMove = action.payload
-            }else {
-                state.currentGoBangMove = action.payload
+            if (state.pieceType) {
+                state.currentTicMove = action.payload;
+            } else {
+                state.currentGoBangMove = action.payload;
             }
         },
         setCurrentsXY: (state, action) => {
-            if(state.pieceType) {
-                state.currentsTicXY = action.payload
-            }else {
-                state.currentsGoBangXY = action.payload
+            if (state.pieceType) {
+                state.currentsTicXY = action.payload;
+            } else {
+                state.currentsGoBangXY = action.payload;
             }
         },
         setSliceCurrentsXY: (state, action) => {
-            if(state.pieceType) {
-                state.sliceCurentsTicXY = action.payload
-            }else {
-                state.sliceCurentsGoBangXY = action.payload
+            if (state.pieceType) {
+                state.sliceCurentsTicXY = action.payload;
+            } else {
+                state.sliceCurentsGoBangXY = action.payload;
             }
-        }
+        },
     },
 });
 

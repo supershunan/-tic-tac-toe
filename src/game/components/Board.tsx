@@ -1,21 +1,7 @@
 import { useEffect, useState } from 'react';
 import Square from './Square';
 import usePieces from '../../hooks/usePieces';
-
-type GameSetting = {
-    name: string;
-    type: string;
-    boardLength: number;
-    victoryBaseReason: number;
-    chessType: Array<string>;
-}
-type PiecesMapType =  Map<number, { direction: Array<number>, content: string, key: number }>;
-interface BoardProps {
-    gameSetting: GameSetting;
-    squares: PiecesMapType;
-    addNewPieces: (index: PiecesMapType) => void;
-    jumpPlace: number;
-}
+import { BoardProps, PiecesMapType } from '../type/index';
 
 /**
  * 棋盘

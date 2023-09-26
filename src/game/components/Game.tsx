@@ -3,54 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { saveGameHistory } from '../../store/game/gameSlice';
 import Board from './Board';
 import '../../App.less';
-
-/**
- * 存储棋盘的类型
- */
-type PiecesMap = Map<number, { direction: Array<number>, content: string, key: number }>
-/**
- * 游戏配置
- * @param name 游戏名字
- * @param board 棋盘宽度
- * @param victoryBaseReason 游戏胜利的基础条件
- * @param chessType 棋子类型
- */
-type GameSetting = {
-    name: string;
-    type: string;
-    boardLength: number;
-    victoryBaseReason: number;
-    chessType: Array<string>;
-}
-/**
- * @param gameSetting 游戏配置
- */
-interface GameProps {
-    gameSetting: GameSetting;
-}
-/**
- * @param key 游戏唯一标识
- * @param currentGameMove 游戏当前位置
- * @param historyGameMap 棋盘数据
- * @param jumpPlace 历史位置
- * @param gameType 游戏类型
- */
-type Game = {
-    historyGameMap: {
-        [key: string]: {
-            currentGameMove: number;
-            historyGameMap: PiecesMap;
-            jumpPlace: number;
-            gameType: string;
-        };
-    };
-}
-/**
- * redux 存储游戏
- */
-interface GameStore {
-    game: Game;
-}
+import { GameProps, GameStore, PiecesMapType } from '../type/index';
 
 /**
  * 游戏主体
@@ -59,7 +12,7 @@ interface GameStore {
 const Game: React.FC<GameProps> = ({ gameSetting }) => {
     const gameStore = useSelector((state: GameStore) => state.game);
     const [gameType, setGameType] = useState(gameSetting.type);
-    const [piecesMap, setPiecesMap] = useState<PiecesMap>(new Map());
+    const [piecesMap, setPiecesMap] = useState<PiecesMapType>(new Map());
     const [currentMove, setCurrentMove] = useState<number>(0);
     const [jumpPlace, setJumpPlace] = useState<number>(-1);
     const dispatch = useDispatch();
@@ -83,7 +36,7 @@ const Game: React.FC<GameProps> = ({ gameSetting }) => {
      * 处理当前棋盘
      * @param nextSquares 更新后的棋盘数据
      */
-    const handlePlay = (nextSquares: PiecesMap) => {
+    const handlePlay = (nextSquares: PiecesMapType) => {
         const newCurrentXY: Array<string> = [];
         nextSquares.forEach((value) => {
             const currentStr = value.direction;

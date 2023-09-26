@@ -1,22 +1,8 @@
 import { useState } from 'react';
 import Game from './components/Game';
 import { gameSettings } from '../game-setting';
+import { GameSettings } from './type/index.ts';
 
-/**
- * 游戏配置
- * @param name 游戏名字
- * @param name 游戏类型
- * @param boardLength 棋盘宽度
- * @param victoryBaseReason 游戏胜利的基础条件
- * @param chessType 棋子类型
- */
-interface GameSettings {
-    name: string;
-    type: string;
-    boardLength: number;
-    victoryBaseReason: number;
-    chessType: Array<string>;
-}
 /**
  * 选择棋盘类型
  * @returns

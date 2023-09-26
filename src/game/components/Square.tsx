@@ -1,15 +1,5 @@
 import React from 'react';
-
-interface SquareProps {
-    /**
-     * @param 格子的内容
-     */
-    content: string | null | undefined;
-    /**
-     * 点击格子
-     */
-    onSquareClick: () => void;
-}
+import { SquareProps } from '../type/index';
 
 /**
  * 格子

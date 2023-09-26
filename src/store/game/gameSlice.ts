@@ -1,69 +1,37 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-
+/**
+ * @param key 游戏唯一标识
+ * @param currentGameMove 游戏当前位置
+ * @param historyGameMap 棋盘数据
+ * @param jumpPlace 历史位置
+ * @param gameType 游戏类型
+ */
+interface HistoryGameMap {
+    currentGameMove?: number;
+    historyGameMap?: Array<Array<number | { direction: Array<number>, content: string, key: number }>>;
+    jumpPlace?: number;
+    gameType?: string;
+}
 interface SliceProps {
-    historyTicMap: Array<Array<number | { direction: Array<number>, content: string, key: number }>>;
-    historyGoBangMap: Array<Array<number | { direction: Array<number>, content: string, key: number }>>;
-    currentTicMove: number;
-    currentGoBangMove: number;
-    pieceType: boolean;
-    currentsTicXY: Array<string>;
-    currentsGoBangXY: Array<string>;
-    sliceCurentsTicXY: Array<string>;
-    sliceCurentsGoBangXY: Array<string>;
+    historyGameMap: HistoryGameMap;
 }
 
-const initialState: SliceProps = {
-    historyTicMap: [],
-    historyGoBangMap: [],
-    currentTicMove: 0,
-    currentGoBangMove: 0,
-    pieceType: true,
-    currentsTicXY: [],
-    currentsGoBangXY: [],
-    sliceCurentsTicXY: [],
-    sliceCurentsGoBangXY: [],
-};
+const initialState: SliceProps = { historyGameMap: {} };
 
-const ticTacORgoBangSice = createSlice({
-    name: 'ticTacORgoBang',
+const gameSice = createSlice({
+    name: 'gameSice',
     initialState,
     reducers: {
-        // redux 里的 state 是根据之前的数据进行判断的，不会用最新的值
-        saveHistory: (state, action) => {
-            if (state.pieceType) {
-                state.historyTicMap = action.payload;
-            } else {
-                state.historyGoBangMap = action.payload;
-            }
-        },
-        setPieceType: (state, action) => {
-            state.pieceType = action.payload;
-        },
-        setCurentMove: (state, action) => {
-            if (state.pieceType) {
-                state.currentTicMove = action.payload;
-            } else {
-                state.currentGoBangMove = action.payload;
-            }
-        },
-        setCurrentsXY: (state, action) => {
-            if (state.pieceType) {
-                state.currentsTicXY = action.payload;
-            } else {
-                state.currentsGoBangXY = action.payload;
-            }
-        },
-        setSliceCurrentsXY: (state, action) => {
-            if (state.pieceType) {
-                state.sliceCurentsTicXY = action.payload;
-            } else {
-                state.sliceCurentsGoBangXY = action.payload;
+        saveGameHistory: (state, action: {payload: HistoryGameMap}) => {
+            const pieceKey = action.payload.gameType;
+            if (pieceKey !== undefined) {
+                (state.historyGameMap as { [key: string]: HistoryGameMap })[pieceKey] = action.payload;
             }
         },
     },
 });
 
-export const { saveHistory, setPieceType, setCurentMove, setCurrentsXY, setSliceCurrentsXY } = ticTacORgoBangSice.actions;
+export const { saveGameHistory } = gameSice.actions;
 
-export default ticTacORgoBangSice.reducer;
+export default gameSice.reducer;

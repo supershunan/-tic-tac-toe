@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import ticTacORgoBangSice from './game/gameSlice';
+import gameSice from './game/gameSlice';
 
-const store = configureStore({ reducer: { ticTacORgoBang: ticTacORgoBangSice } });
+const store = configureStore({ reducer: { game: gameSice } });
 
 export default store;

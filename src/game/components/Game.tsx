@@ -38,6 +38,7 @@ const Game: React.FC<GameProps> = ({ gameSetting }) => {
      */
     const handlePlay = (nextSquares: PiecesMapType) => {
         setPiecesMap(new Map(nextSquares));
+        setJumpPlace(-1);
         setCurrentMove(nextSquares.size);
     };
     /**

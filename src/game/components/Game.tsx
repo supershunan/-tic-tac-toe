@@ -27,9 +27,9 @@ const Game: React.FC<GameProps> = ({ gameSetting }) => {
             setCurrentMove(currentGameMove);
             setJumpPlace(jumpPlace);
         } else {
-            setPiecesMap(new Map());
-            setCurrentMove(0);
-            setJumpPlace(-1);
+            piecesMap.size > 0 && setPiecesMap(new Map());
+            currentMove !== 0 && setCurrentMove(0);
+            jumpPlace !== -1 && setJumpPlace(-1);
         }
     };
     /**
@@ -37,12 +37,6 @@ const Game: React.FC<GameProps> = ({ gameSetting }) => {
      * @param nextSquares 更新后的棋盘数据
      */
     const handlePlay = (nextSquares: PiecesMapType) => {
-        const newCurrentXY: Array<string> = [];
-        nextSquares.forEach((value) => {
-            const currentStr = value.direction;
-            newCurrentXY.push(currentStr.join(''));
-        });
-
         setPiecesMap(new Map(nextSquares));
         setCurrentMove(nextSquares.size);
     };

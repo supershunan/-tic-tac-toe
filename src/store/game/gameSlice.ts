@@ -9,7 +9,7 @@ import { createSlice } from '@reduxjs/toolkit';
  */
 interface HistoryGameMap {
     currentGameMove?: number;
-    historyGameMap?: Array<Array<number | { direction: Array<number>, content: string, key: number }>>;
+    historyGameMap?: Array<[string, { direction: Array<number>, content: string, key: string }]>;
     jumpPlace?: number;
     gameType?: string;
 }
@@ -24,8 +24,9 @@ const gameSice = createSlice({
     initialState,
     reducers: {
         saveGameHistory: (state, action: {payload: HistoryGameMap}) => {
-            const pieceKey = action.payload.gameType;
-            if (pieceKey !== undefined) {
+            const historyLength = action.payload.historyGameMap?.length;
+            const pieceKey = action.payload.gameType as string;
+            if (historyLength) {
                 (state.historyGameMap as { [key: string]: HistoryGameMap })[pieceKey] = action.payload;
             }
         },

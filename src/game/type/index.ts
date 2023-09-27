@@ -1,7 +1,7 @@
 /**
  * 游戏配置
  * @param name 游戏名字
- * @param name 游戏类型
+ * @param type 游戏类型
  * @param boardLength 棋盘宽度
  * @param victoryBaseReason 游戏胜利的基础条件
  * @param chessType 棋子类型
@@ -16,8 +16,12 @@ export interface GameSettings {
 
 /**
  * 存储棋盘的类型
+ * @param string 棋子的key
+ * @param direction 棋子坐标
+ * @param content 棋子对应的内容
+ * @param key 棋子坐标字符串
  */
-export type PiecesMapType = Map<number, { direction: Array<number>, content: string, key: number }>
+export type PiecesMapType = Map<string, { direction: Array<number>, content: string, key: string }>
 
 /**
  * 游戏配置
@@ -81,9 +85,9 @@ export interface BoardProps {
 
 /**
  * @param content 格子的内容
- * @param onSquareClick 点击格子
+ * @param direction 格子坐标
  */
 export interface SquareProps {
     content: string | null | undefined;
-    onSquareClick: () => void;
+    direction: string;
 }

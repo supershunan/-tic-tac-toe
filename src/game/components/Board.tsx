@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Square from './Square';
 import usePieces from '../../hooks/usePieces';
-import { BoardProps, PiecesMapType } from '../type/index';
+import { BoardProps, PiecesMapType, GameStore } from '../type/index';
+import { useSelector } from 'react-redux';
 
 /**
  * 棋盘
@@ -12,6 +13,7 @@ import { BoardProps, PiecesMapType } from '../type/index';
  * @returns
  */
 const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpPlace }) => {
+    const gameStore = useSelector((state: GameStore) => state.game);
     const [historySquares, setHistorySquares] = useState<PiecesMapType | null>(null);
     // 计算了当前棋子是第几步并用于显示棋子类型
     const [currentPieceType, setCurrentPieceType] = useState<boolean>();
@@ -33,16 +35,28 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
     }, [jumpPlace]);
 
     useEffect(() => {
+        judgeWinner();
+    }, [gameSetting]);
+
+    /**
+     * 切换游戏类型判断胜负
+     */
+    const judgeWinner = () => {
         setWinner(null);
-        const newSquares = new Map(squares);
-        const lastEntry = [...newSquares.entries()].pop();
-        if (lastEntry && gameSetting.chessType.find(el => el === lastEntry[1].content)) {
-            const win = usePieces(newSquares, gameSetting.boardLength, gameSetting.victoryBaseReason, lastEntry[1].direction);
-            if (win) {
-                setWinner(win);
+        setCurrentPieceType(true);
+        if (gameStore.historyGameMap[gameSetting.type]) {
+            const { historyGameMap } = gameStore.historyGameMap[gameSetting.type];
+            const newSquares = new Map(historyGameMap);
+            setCurrentPieceType(newSquares.size % 2 === 0);
+            const lastEntry = [...newSquares.entries()].pop();
+            if (lastEntry && gameSetting.chessType.find(el => el === lastEntry[1].content)) {
+                const win = usePieces(newSquares, gameSetting.boardLength, gameSetting.victoryBaseReason, lastEntry[1].direction);
+                if (win) {
+                    setWinner(win);
+                }
             }
         }
-    }, [gameSetting, squares]);
+    };
 
     /**
      * 获取当前历史记录前的数据
@@ -50,14 +64,18 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
      */
     const jumpSquares = (jumpPlace: number) => {
         const tempSquares = new Map(squares);
-        const selectedItems = new Map();
-        let count = 0;
-        for (const [key, value] of tempSquares) {
-            if (count < jumpPlace) {
-                selectedItems.set(key, value);
-                count++;
-            } else {
-                break;
+        let selectedItems = new Map();
+        if (jumpPlace === -1) {
+            selectedItems = tempSquares;
+        } else {
+            let count = 0;
+            for (const [key, value] of tempSquares) {
+                if (count < jumpPlace) {
+                    selectedItems.set(key, value);
+                    count++;
+                } else {
+                    break;
+                }
             }
         }
         setWinner(null);
@@ -75,25 +93,24 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
 
     /**
      *
-     * @param index 棋子位置(按序排列)
+     * @param stingCoordinate 棋子坐标字符串
      * @param pieceCoordinate 棋子坐标
      * @returns
      */
-    const handleClick = (index: number, pieceCoordinate: Array<number>) => {
+    const handleClick = (stingCoordinate: string, pieceCoordinate: Array<number>) => {
         const piecesData = {
             direction: pieceCoordinate,
             content: '',
-            key: index,
+            key: stingCoordinate,
         };
-        const newSquares = new Map(historySquares ? historySquares : squares);
+        const newSquares =  historySquares ? historySquares : squares;
         piecesData.content = currentPieceType ? gameSetting.chessType[0] : gameSetting.chessType[1];
-        const isExist = historySquares ? historySquares?.get(index) : squares?.get(index);
+        const isExist = historySquares ? historySquares?.get(stingCoordinate) : squares?.get(stingCoordinate);
+
         if (winner || isExist) {
             return;
         }
-
-        // 正常添加棋子和判断胜负
-        newSquares.set(index, piecesData);
+        newSquares.set(stingCoordinate, piecesData);
 
         // 使用封装好的棋盘hook
         const win = usePieces(newSquares, gameSetting.boardLength, gameSetting.victoryBaseReason, pieceCoordinate);
@@ -108,28 +125,42 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
         // 历史记录清空
         setHistorySquares(null);
     };
+    /**
+     * 给整个棋盘添加点击事件，通过监听数据触发渲染
+     * @param event dom事件
+     */
+    const handleBoardClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        const target = event.target as HTMLButtonElement;
+        const piecCoordinate = JSON.parse(target.getAttribute('data-direction') as string);
+        const stingCoordinate = piecCoordinate !== null && piecCoordinate.join('');
+        const isExecute = (Array.isArray(piecCoordinate) && piecCoordinate.length === 2);
+        if (isExecute) {
+            handleClick(stingCoordinate, piecCoordinate);
+        }
+    };
 
     const listSquars = Array.from({ length: gameSetting.boardLength }, (__, index) => (
         <div key={index} className="board-row">
             {Array.from({ length: gameSetting.boardLength }, (__, smallI) => {
-                // 为每个格子传递为数组对应的index,此处计算为固定算法，可考虑不追其原因
-                const num = index + ((index + 1) * (gameSetting.boardLength - 1)) - (gameSetting.boardLength - 1 - smallI);
+                // 坐标转为字符串作为唯一的key
+                const stingCoordinate = [index, smallI].join('');
 
                 return (
                     <Square
-                        key={num}
-                        content={historySquares ? historySquares?.get(num)?.content : squares?.get(num)?.content}
-                        onSquareClick={handleClick.bind(null, num, [index, smallI])}
+                        key={stingCoordinate}
+                        content={historySquares ? historySquares?.get(stingCoordinate)?.content : squares?.get(stingCoordinate)?.content}
+                        direction={JSON.stringify([index, smallI])}
                     />
                 );
             })}
         </div>
     ));
-
     return (
         <div>
             <div className="user">{status}</div>
-            {listSquars}
+            <div onClick={handleBoardClick}>
+                {listSquars}
+            </div>
         </div>
     );
 };

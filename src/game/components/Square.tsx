@@ -4,15 +4,15 @@ import { SquareProps } from '../type/index';
 /**
  * 格子
  * @param content 格子的内容
- * @param onSquareClick 格子的点击事件
+ * @param direction 格子的坐标
  * @returns
  */
-const Square: React.FC<SquareProps> = ({ content, onSquareClick }) => {
+const Square: React.FC<SquareProps> = ({ content, direction }) => {
     return (
-        <button className="square" onClick={onSquareClick}>
+        <div className="square" data-direction={direction}>
             {content}
-        </button>
+        </div>
     );
 };
 
-export default Square;
+export default React.memo(Square);

@@ -17,6 +17,14 @@ const ChooseGame: React.FC<{}> = () => {
         const selectedValue = Number(event.target.value);
         setCurrentGame(games[selectedValue]);
     };
+    /**
+     * 添加游戏
+     */
+    // const handleChildDataChange = (child: any) => {
+    //     setGames(() => {
+    //         return [...child]
+    //     });
+    // };
 
     return (
         <div>
@@ -34,6 +42,7 @@ const ChooseGame: React.FC<{}> = () => {
                     }
                 </select>
             </label>
+            {/* <AddGame addGameGetting={handleChildDataChange} /> */}
             {
                 currentGame && <Game gameSetting={currentGame}/>
             }

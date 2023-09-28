@@ -39,6 +39,14 @@ type GameSetting = {
 }
 
 /**
+ * 添加游戏
+ * @param onDataChange 添加游戏的回调函数
+ */
+export interface AddGameProps {
+    onDataChange: (data: Array<GameSetting>) => void;
+}
+
+/**
  * @param gameSetting 游戏配置
  */
 export interface GameProps {

@@ -48,6 +48,9 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
             const { historyGameMap } = gameStore.historyGameMap[gameSetting.type];
             const newSquares = new Map(historyGameMap);
             setCurrentPieceType(newSquares.size % 2 === 0);
+            if (jumpPlace === gameStore.historyGameMap[gameSetting.type].jumpPlace) {
+                jumpSameSquares(historyGameMap, jumpPlace);
+            }
             const lastEntry = [...newSquares.entries()].pop();
             if (lastEntry && gameSetting.chessType.find(el => el === lastEntry[1].content)) {
                 const win = usePieces(newSquares, gameSetting.boardLength, gameSetting.victoryBaseReason, lastEntry[1].direction);
@@ -85,6 +88,31 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
             const win = usePieces(selectedItems, gameSetting.boardLength, gameSetting.victoryBaseReason, lastEntry[1].direction);
             if (win) {
                 setWinner(win);
+            }
+        }
+        setCurrentPieceType(selectedItems.size % 2 === 0);
+        setHistorySquares(selectedItems);
+    };
+
+    /**
+     * 特殊处理当前游戏类型的历史位置和切换游戏类型的历史位置相同时修改历史棋子渲染
+     * @param storeSquares redux 中的棋盘数据
+     * @param jumpPlace 历史位置
+     */
+    const jumpSameSquares = (storeSquares: PiecesMapType, jumpPlace: number) => {
+        const tempSquares = new Map(storeSquares);
+        let selectedItems = new Map();
+        if (jumpPlace === -1) {
+            selectedItems = tempSquares;
+        } else {
+            let count = 0;
+            for (const [key, value] of tempSquares) {
+                if (count < jumpPlace) {
+                    selectedItems.set(key, value);
+                    count++;
+                } else {
+                    break;
+                }
             }
         }
         setCurrentPieceType(selectedItems.size % 2 === 0);

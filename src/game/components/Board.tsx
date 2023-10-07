@@ -132,10 +132,10 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
     const handleBoardClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const target = event.target as HTMLButtonElement;
         const piecCoordinate = JSON.parse(target.getAttribute('data-direction') as string);
-        const stingCoordinate = piecCoordinate !== null && piecCoordinate.join('');
+        const stingCoordinate = piecCoordinate !== null && JSON.stringify(piecCoordinate);
         const isExecute = (Array.isArray(piecCoordinate) && piecCoordinate.length === 2);
         if (isExecute) {
-            handleClick(stingCoordinate, piecCoordinate);
+            handleClick(stingCoordinate as string, piecCoordinate);
         }
     };
 
@@ -143,13 +143,13 @@ const Board: React.FC<BoardProps> = ({ gameSetting, squares, addNewPieces, jumpP
         <div key={index} className="board-row">
             {Array.from({ length: gameSetting.boardLength }, (__, smallI) => {
                 // 坐标转为字符串作为唯一的key
-                const stingCoordinate = [index, smallI].join('');
+                const stingCoordinate = JSON.stringify([index, smallI]);
 
                 return (
                     <Square
-                        key={stingCoordinate}
+                        key={JSON.stringify([index, smallI])}
                         content={historySquares ? historySquares?.get(stingCoordinate)?.content : squares?.get(stingCoordinate)?.content}
-                        direction={JSON.stringify([index, smallI])}
+                        direction={stingCoordinate}
                     />
                 );
             })}

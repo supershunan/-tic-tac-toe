@@ -56,6 +56,12 @@ class Board extends React.Component<BoardProps, BoardState> {
         }
         if (prevProps.gameSetting.type !== this.props.gameSetting.type) {
             this.judgeWinner();
+            if (prevProps.jumpPlace === this.props.jumpPlace) {
+                if (this.props.gameStore.historyGameMap[this.props.gameSetting.type]) {
+                    const { historyGameMap } = this.props.gameStore.historyGameMap[this.props.gameSetting.type];
+                    this.jumpSameSquares(historyGameMap, prevProps.jumpPlace);
+                }
+            }
         }
     }
 
@@ -106,6 +112,9 @@ class Board extends React.Component<BoardProps, BoardState> {
             const { historyGameMap } = this.props.gameStore.historyGameMap[this.props.gameSetting.type];
             const newSquares = new Map(historyGameMap);
             this.setState({ currentPieceType: newSquares.size % 2 === 0 });
+            // if () {
+            //     this.jumpSameSquares(historyGameMap, )
+            // }
             const lastEntry = [...newSquares.entries()].pop();
             if (lastEntry && this.props.gameSetting.chessType.find(el => el === lastEntry[1].content)) {
                 const win = usePieces(newSquares, this.props.gameSetting.boardLength, this.props.gameSetting.victoryBaseReason, lastEntry[1].direction);
@@ -114,6 +123,33 @@ class Board extends React.Component<BoardProps, BoardState> {
                 }
             }
         }
+    };
+
+    /**
+     * 特殊处理当前游戏类型的历史位置和切换游戏类型的历史位置相同时修改历史棋子渲染
+     * @param storeSquares redux 中的棋盘数据
+     * @param jumpPlace 历史位置
+     */
+    jumpSameSquares = (storeSquares: any, jumpPlace: number) => {
+        const tempSquares = new Map(storeSquares);
+        let selectedItems = new Map();
+        if (jumpPlace === -1) {
+            selectedItems = tempSquares;
+        } else {
+            let count = 0;
+            for (const [key, value] of tempSquares) {
+                if (count < jumpPlace) {
+                    selectedItems.set(key, value);
+                    count++;
+                } else {
+                    break;
+                }
+            }
+        }
+        this.setState({
+            currentPieceType: selectedItems.size % 2 === 0,
+            historySquares: selectedItems,
+        });
     };
 
     /**
@@ -161,10 +197,10 @@ class Board extends React.Component<BoardProps, BoardState> {
     handleBoardClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const target = event.target as HTMLButtonElement;
         const piecCoordinate = JSON.parse(target.getAttribute('data-direction') as string);
-        const stingCoordinate = piecCoordinate !== null && piecCoordinate.join('');
+        const stingCoordinate = piecCoordinate !== null && JSON.stringify(piecCoordinate);
         const isExecute = (Array.isArray(piecCoordinate) && piecCoordinate.length === 2);
         if (isExecute) {
-            this.handleClick(stingCoordinate, piecCoordinate);
+            this.handleClick(stingCoordinate as string, piecCoordinate);
         }
     };
 
@@ -187,12 +223,12 @@ class Board extends React.Component<BoardProps, BoardState> {
             <div key={index} className="board-row">
                 {Array.from({ length: gameSetting.boardLength }, (__, smallI) => {
                     // 坐标转为字符串作为唯一的key
-                    const stingCoordinate = [index, smallI].join('');
+                    const stingCoordinate = JSON.stringify([index, smallI]);
                     return (
                         <Square
                             key={stingCoordinate}
                             content={historySquares ? historySquares?.get(stingCoordinate)?.content : squares?.get(stingCoordinate)?.content}
-                            direction={JSON.stringify([index, smallI])}
+                            direction={stingCoordinate}
                         />
                     );
                 })}

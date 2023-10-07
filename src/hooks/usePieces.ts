@@ -24,7 +24,7 @@ const chunkMapArray = (peicesMap: PiecesMapType, boardLength: number): Array<Arr
 
     Array.from({ length: boardLength * boardLength }, (__, xx) => {
         Array.from({ length: boardLength }, (__, yy) => {
-            const axis = [xx, yy].join('');
+            const axis = JSON.stringify([xx, yy]);
             const piecesValue = peicesMap.get(axis);
             if (peicesMap.has(axis) && piecesValue !== undefined) {
                 result.push(piecesValue.content);

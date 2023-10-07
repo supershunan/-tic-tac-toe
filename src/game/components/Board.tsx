@@ -112,9 +112,6 @@ class Board extends React.Component<BoardProps, BoardState> {
             const { historyGameMap } = this.props.gameStore.historyGameMap[this.props.gameSetting.type];
             const newSquares = new Map(historyGameMap);
             this.setState({ currentPieceType: newSquares.size % 2 === 0 });
-            // if () {
-            //     this.jumpSameSquares(historyGameMap, )
-            // }
             const lastEntry = [...newSquares.entries()].pop();
             if (lastEntry && this.props.gameSetting.chessType.find(el => el === lastEntry[1].content)) {
                 const win = usePieces(newSquares, this.props.gameSetting.boardLength, this.props.gameSetting.victoryBaseReason, lastEntry[1].direction);

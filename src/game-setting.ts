@@ -46,4 +46,17 @@ const gameSettings: Array<GameSettings> = [
  */
 const gameTypes: Array<string> = ['TicTac', 'GoBang'];
 
-export { gameSettings, gameTypes };
+/**
+ * 对战模式
+ */
+const AIGames = [
+    {
+        key: 0,
+        value: '玩家先手',
+    },
+    {
+        key: 1,
+        value: 'AI先手',
+    },
+];
+export { gameSettings, gameTypes, AIGames };

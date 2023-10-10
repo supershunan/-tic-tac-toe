@@ -6,12 +6,14 @@ import { createSlice } from '@reduxjs/toolkit';
  * @param historyGameMap 棋盘数据
  * @param jumpPlace 历史位置
  * @param gameType 游戏类型
+ * @param aiType AI模式
  */
 interface HistoryGameMap {
     currentGameMove?: number;
     historyGameMap?: Array<[string, { direction: Array<number>, content: string, key: string }]>;
     jumpPlace?: number;
     gameType?: string;
+    aiType?: number;
 }
 interface SliceProps {
     historyGameMap: HistoryGameMap;

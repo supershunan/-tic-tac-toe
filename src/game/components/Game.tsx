@@ -9,6 +9,7 @@ type HistoryState = {
     historyGameMap: Array<[string, { direction: Array<number>, content: string, key: string }]>;
     jumpPlace: number;
     gameType: string;
+    aiType?: number;
 }
 
 interface HistoryGameMap {
@@ -72,6 +73,7 @@ class Game extends React.Component<GameProps, GameState> {
                 currentGameMove: prevState.currentMove,
                 gameType: prevProps.gameSetting.type,
                 jumpPlace: prevState.jumpPlace,
+                aiType: prevProps.gameMode,
             });
             this.initGame();
         }

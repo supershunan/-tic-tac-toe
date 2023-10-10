@@ -43,7 +43,6 @@ const useAIService = (boards: PiecesMapType, player: string, isPlayerFirst: bool
                 board[row][col] = null;
 
                 if (isPlayerFirst) {
-                    // console.log(score + ' | ' + row + ',' + col + '  | ' +  bestScore);
                     if (score > bestScore) {
                         bestScore = score;
                         bestMove.row = row;
@@ -51,7 +50,6 @@ const useAIService = (boards: PiecesMapType, player: string, isPlayerFirst: bool
                     }
                     alpha = Math.max(alpha, score);
                 } else {
-                    // console.log(score + ' | ' + row + ',' + col + '  | ' +  bestScore);
                     if (score < bestScore) {
                         bestScore = score;
                         bestMove.row = row;
@@ -66,7 +64,6 @@ const useAIService = (boards: PiecesMapType, player: string, isPlayerFirst: bool
             }
         }
     }
-    // console.log(bestMove);
     return bestMove;
 };
 
@@ -146,7 +143,6 @@ function evaluate (board: Array<Array<string | null>>, player: string) {
 
     // 对手玩家
     const opponentLines = countPossibleLines(board, opponent);
-    // console.log(playerLines + '  | ' +  opponentLines);
     // 特殊棋局需要将权重改变(仅适用于井字棋)
     if (playerLines < opponentLines && playerLines === 0) {
         return -11;

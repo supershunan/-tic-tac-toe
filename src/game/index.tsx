@@ -1,14 +1,15 @@
 import React from 'react';
 import Game from './components/Game';
-import { gameSettings } from '../game-setting';
+import { gameSettings, AIGames } from '../game-setting';
 import { GameSettings } from './type';
 import '../App.less';
+import { connect } from 'react-redux';
 
 /**
  * @param games 游戏配置
  * @param currentGame 当前游戏配置
  * @param aiGames AI游戏选择
- * @param currentGameMode 当前游戏模式
+ * @param currentGameMode 当前游戏模式,默认为玩家先手
  */
 interface ChooseGameState {
     games: Array<GameSettings>;
@@ -17,22 +18,41 @@ interface ChooseGameState {
     currentGameMode: number;
 }
 
-export default class ChooseGame extends React.Component<{}, ChooseGameState> {
-    constructor (props: {}) {
+interface ChooseGameProps {
+    gameStore: HistoryGameMap;
+}
+
+type HistoryState = {
+    currentGameMove: number;
+    historyGameMap: Array<[string, { direction: Array<number>, content: string, key: string }]>;
+    jumpPlace: number;
+    gameType: string;
+    aiType?: number;
+}
+
+interface HistoryGameMap {
+    historyGameMap: {
+        [key: string]: HistoryState;
+    };
+}
+interface GameStore {
+    game: HistoryGameMap;
+}
+
+/**
+ * redux 数据
+ * @returns
+ */
+const mapStateToProps = (state: GameStore) => {
+    return { gameStore: state.game };
+};
+class ChooseGame extends React.Component<ChooseGameProps, ChooseGameState> {
+    constructor (props: ChooseGameProps) {
         super(props);
         this.state = {
             games: gameSettings,
             currentGame: gameSettings[0],
-            aiGames: [
-                {
-                    key: 0,
-                    value: '人类先手',
-                },
-                {
-                    key: 1,
-                    value: 'AI先手',
-                },
-            ],
+            aiGames: AIGames,
             currentGameMode: 0,
         };
     }
@@ -54,6 +74,9 @@ export default class ChooseGame extends React.Component<{}, ChooseGameState> {
 
     render (): React.ReactNode {
         const { games, currentGame, aiGames, currentGameMode } = this.state;
+        // 获取当前AI模式
+        const gameStoreHistory = this.props.gameStore.historyGameMap[currentGame.type];
+        const storeGameMode = gameStoreHistory?.aiType ?? null;
         return (
             <div>
                 <label>
@@ -74,7 +97,7 @@ export default class ChooseGame extends React.Component<{}, ChooseGameState> {
                     {   currentGame.isAI
                         ? <label>
                             人机模式请选择先手：
-                            <select onChange={this.handleChangeMode.bind(this)}>
+                            <select onChange={this.handleChangeMode.bind(this)} defaultValue={storeGameMode === null ? 0 : storeGameMode}>
                                 {
                                     aiGames.map((game, index) => {
                                         return (
@@ -95,3 +118,5 @@ export default class ChooseGame extends React.Component<{}, ChooseGameState> {
         );
     }
 }
+
+export default connect(mapStateToProps, null)(ChooseGame);

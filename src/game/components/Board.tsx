@@ -2,7 +2,7 @@ import React from 'react';
 import { BoardProp, PiecesMapType } from '../type/index';
 import { connect } from 'react-redux';
 import usePieces from '../../hooks/usePieces';
-import useAIService from '../../hooks/useService';
+import useAIService from '../../hooks/useAIService';
 import Square from './Square';
 
 type HistoryState = {

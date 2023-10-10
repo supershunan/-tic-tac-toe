@@ -23,6 +23,7 @@ interface GameStore {
 interface GameProps {
     gameStore: HistoryGameMap;
     gameSetting: GameSettings;
+    gameMode: number;
     saveGameHistory: (data: HistoryState) => void;
 }
 
@@ -74,6 +75,14 @@ class Game extends React.Component<GameProps, GameState> {
             });
             this.initGame();
         }
+
+        if (prevProps.gameMode !== this.props.gameMode) {
+            this.setState({
+                piecesMap: new Map(),
+                currentMove: 0,
+                jumpPlace: -1,
+            });
+        }
     }
 
     /**
@@ -120,10 +129,17 @@ class Game extends React.Component<GameProps, GameState> {
 
     render (): React.ReactNode {
         const { piecesMap, currentMove, jumpPlace } = this.state;
+        const { gameMode } = this.props;
         // 历史步骤
         const moves = Array(currentMove + 1).fill(null)
             .map((squares: Array<string | null>, move: number) => {
                 let description;
+                let isDisabled;
+                if (move % 2 === 0) {
+                    isDisabled = Boolean(gameMode);
+                } else {
+                    isDisabled = Boolean(!gameMode);
+                }
                 if (move > 0) {
                     description = `Go to move # ${move}`;
                 } else {
@@ -131,7 +147,7 @@ class Game extends React.Component<GameProps, GameState> {
                 }
                 return (
                     <li key={move}>
-                        <button onClick={() => this.jumpTo(move)}>{description}</button>
+                        <button disabled={ this.props.gameSetting.isAI ? isDisabled : false } onClick={() => this.jumpTo(move)}>{description}</button>
                     </li>
                 );
             });
@@ -140,7 +156,7 @@ class Game extends React.Component<GameProps, GameState> {
             <div className="game">
                 <div className="game-content">
                     <div className="game-board">
-                        <Board gameSetting={this.props.gameSetting} squares={piecesMap} jumpPlace={jumpPlace} addNewPieces={this.handlePlay} />
+                        <Board gameSetting={this.props.gameSetting} squares={piecesMap} jumpPlace={jumpPlace} addNewPieces={this.handlePlay} gameMode={this.props.gameMode}/>
                     </div>
                     <div className="game-info">
                         <ol>{moves}</ol>

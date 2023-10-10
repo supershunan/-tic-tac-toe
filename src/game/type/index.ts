@@ -12,6 +12,7 @@ export interface GameSettings {
     boardLength: number;
     victoryBaseReason: number;
     chessType: Array<string>;
+    isAI?: boolean;
 }
 
 /**
@@ -36,6 +37,7 @@ type GameSetting = {
     boardLength: number;
     victoryBaseReason: number;
     chessType: Array<string>;
+    isAI?: boolean;
 }
 
 /**

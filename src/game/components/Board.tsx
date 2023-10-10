@@ -2,6 +2,7 @@ import React from 'react';
 import { BoardProp, PiecesMapType } from '../type/index';
 import { connect } from 'react-redux';
 import usePieces from '../../hooks/usePieces';
+import useAIService from '../../hooks/useService';
 import Square from './Square';
 
 type HistoryState = {
@@ -22,6 +23,7 @@ interface GameStore {
 
 interface BoardProps extends BoardProp {
     gameStore: HistoryGameMap;
+    gameMode: number;
 }
 interface BoardState {
     historySquares: PiecesMapType | null;
@@ -60,6 +62,33 @@ class Board extends React.Component<BoardProps, BoardState> {
                 if (this.props.gameStore.historyGameMap[this.props.gameSetting.type]) {
                     const { historyGameMap } = this.props.gameStore.historyGameMap[this.props.gameSetting.type];
                     this.jumpSameSquares(historyGameMap, prevProps.jumpPlace);
+                }
+            }
+        }
+        // 是否支持 AI 对战，仅在井字棋下支持
+        if (this.props.gameSetting.isAI) {
+            // 切换玩家模式重置胜利
+            if (prevProps.gameMode !== this.props.gameMode) {
+                this.setState({
+                    historySquares: null,
+                    currentPieceType: true,
+                    winner: null,
+                });
+            }
+
+            if (this.props.gameMode) {
+                if (prevProps.squares !== this.props.squares && ((this.props.squares.size) % 2 === 0)) {
+                    // AI先手
+                    const bestMove = useAIService(this.props.squares, 'X', true);
+                    this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
+                }
+            }
+
+            if (!this.props.gameMode) {
+                if (prevProps.squares !== this.props.squares && (this.props.squares.size % 2 !== 0)) {
+                    // 人类先手
+                    const bestMove = useAIService(this.props.squares, 'O', false);
+                    bestMove.col >= 0 && this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
                 }
             }
         }
@@ -166,7 +195,6 @@ class Board extends React.Component<BoardProps, BoardState> {
         const newSquares =  historySquares ? historySquares : squares;
         piecesData.content = currentPieceType ? gameSetting.chessType[0] : gameSetting.chessType[1];
         const isExist = historySquares ? historySquares?.get(stingCoordinate) : squares?.get(stingCoordinate);
-
         if (winner || isExist) {
             return;
         }
@@ -175,7 +203,10 @@ class Board extends React.Component<BoardProps, BoardState> {
         // 使用封装好的棋盘hook
         const win = usePieces(newSquares, gameSetting.boardLength, gameSetting.victoryBaseReason, pieceCoordinate);
         if (win) {
-            this.setState({ winner: win });
+            this.setState({
+                winner: win,
+                historySquares: null,
+            });
             this.props.addNewPieces(newSquares);
             return;
         }

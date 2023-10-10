@@ -5,6 +5,7 @@
  * @param boardLength 棋盘宽度
  * @param victoryBaseReason 游戏胜利的基础条件
  * @param chessType 棋子类型
+ * @param isAI 是否支持AI
  */
 interface GameSettings {
     name: string;
@@ -12,6 +13,7 @@ interface GameSettings {
     boardLength: number;
     victoryBaseReason: number;
     chessType: Array<string>;
+    isAI?: boolean;
 }
 const gameSettings: Array<GameSettings> = [
     {
@@ -20,6 +22,7 @@ const gameSettings: Array<GameSettings> = [
         boardLength: 3,
         victoryBaseReason: 3,
         chessType: ['X', 'O'],
+        isAI: true,
     },
     {
         name: '五子棋',
@@ -27,6 +30,7 @@ const gameSettings: Array<GameSettings> = [
         boardLength: 15,
         victoryBaseReason: 5,
         chessType: ['⚫', '⚪'],
+        isAI: false,
     },
     // {
     //     name: '十子棋',

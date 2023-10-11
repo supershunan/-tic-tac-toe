@@ -164,12 +164,13 @@ const evaluateBoard = (board: Array<Array<string>>): number => {
     const { counts: countsCurrent, score: scoreCurrent } = countsPlayer(board, PLAYER_CURRENT);
     const { counts: countsOpponent, score: scoreOpponent } = countsPlayer(board, PLAYER_OPPONENT);
 
+    // 将当前棋盘信息扁平化为一维数组
     const countsCurrentArr: Array<string> =
         `${countsCurrent.horizontal.join('')}${countsCurrent.vertical.join('')}${countsCurrent.diagonal.join('')}`.split('');
     const countsOpponentArr: Array<string> =
         `${countsOpponent.horizontal.join('')}${countsOpponent.vertical.join('')}${countsOpponent.diagonal.join('')}`.split('');
 
-    // 将己方棋子统计减去对方棋子统计，得到最终棋盘上连子统计
+    // 当前棋盘己方和对方的位置信息进行相减得到新的评估数组
     const countsSubArr = countsCurrentArr.map((count, index) => {
         return Number(count) - Number(countsOpponentArr[index]);
     });
@@ -186,21 +187,21 @@ const evaluateBoard = (board: Array<Array<string>>): number => {
  */
 const countsPlayer = (board: Array<Array<string>>, player: string): boardCountInfo => {
     const counts = {
-        horizontal: [0, 0, 0],
-        vertical: [0, 0, 0],
-        diagonal: [0, 0],
-        cornerControl: 0,
-        centerControl: 0,
+        horizontal: [0, 0, 0], // 水平
+        vertical: [0, 0, 0],   // 垂直
+        diagonal: [0, 0],      // 对角线
+        cornerControl: 0,      // 控制的角落位置
+        centerControl: 0,      // 中心位置控制
     };
     /**
-     * 计算当前方向的得分
+     * 计算当前棋盘位置的信息
      * @param row
      * @param col
      * @param property 索引key
      * @param value 数组的key
      */
     const addToCounts = (row: number, col: number, property: keyof typeof counts, value: number) => {
-        (counts[property] as number[])[value]++;
+        (counts[property] as number[])[value] += 1;
     };
 
     for (let row = 0; row < 3; row++) {
@@ -225,7 +226,7 @@ const countsPlayer = (board: Array<Array<string>>, player: string): boardCountIn
     }
 
     /**
-     *
+     * 为当前棋盘增加评估分数10次方
      * @param property 索引key
      * @param factor 给评估值进行放大的倍数
      * @returns number
@@ -244,9 +245,7 @@ const countsPlayer = (board: Array<Array<string>>, player: string): boardCountIn
 };
 
 /**
- * 判断最大递归数结束时，下一步落子的是己方还是对方；
- *  如是己方且下步就能赢则增加局面分数
- *  如是对方且下步就能赢则减少局面分数
+ *  通过递归奇偶，为AI赋值高权重
  * @param countsSubArr 己方连子数减去对方连子数形成的数组
  * @returns 增加的局面分数
  */

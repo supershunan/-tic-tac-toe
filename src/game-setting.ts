@@ -14,6 +14,7 @@ interface GameSettings {
     victoryBaseReason: number;
     chessType: Array<string>;
     isAI?: boolean;
+    directIsWinAI?: number;
 }
 const gameSettings: Array<GameSettings> = [
     {
@@ -23,6 +24,7 @@ const gameSettings: Array<GameSettings> = [
         victoryBaseReason: 3,
         chessType: ['X', 'O'],
         isAI: true,
+        directIsWinAI: 3,
     },
     {
         name: '五子棋',
@@ -71,4 +73,18 @@ const BOARD_COUNT = {
     cornerControl: 0,      // 控制的角落位置
     centerControl: 0,      // 中心位置控制
 };
-export { gameSettings, gameTypes, AIGames, BOARD_COUNT };
+// 获胜的各类情况
+const WinningCombinations = [
+    // 横向获胜组合
+    [[0, 0], [0, 1], [0, 2]],
+    [[1, 0], [1, 1], [1, 2]],
+    [[2, 0], [2, 1], [2, 2]],
+    // 纵向获胜组合
+    [[0, 0], [1, 0], [2, 0]],
+    [[0, 1], [1, 1], [2, 1]],
+    [[0, 2], [1, 2], [2, 2]],
+    // 对角线获胜组合
+    [[0, 0], [1, 1], [2, 2]],
+    [[0, 2], [1, 1], [2, 0]],
+];
+export { gameSettings, gameTypes, AIGames, BOARD_COUNT, WinningCombinations };

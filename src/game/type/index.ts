@@ -31,13 +31,14 @@ export type PiecesMapType = Map<string, { direction: Array<number>, content: str
  * @param victoryBaseReason 游戏胜利的基础条件
  * @param chessType 棋子类型
  */
-type GameSetting = {
+export type GameSetting = {
     name: string;
     type: string;
     boardLength: number;
     victoryBaseReason: number;
     chessType: Array<string>;
     isAI?: boolean;
+    directIsWinAI?: number;
 }
 
 /**

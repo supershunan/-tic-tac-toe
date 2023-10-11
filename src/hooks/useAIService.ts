@@ -1,4 +1,4 @@
-import { PiecesMapType } from '../game/type/index';
+import { PiecesMapType, GameSetting } from '../game/type/index';
 import usePieces from './usePieces';
 import { BOARD_COUNT } from '../game-setting';
 
@@ -32,16 +32,16 @@ let PLAYER_OPPONENT: string;
  * @param isFirstAI AI是否先手
  * @returns { row: number, col: number }
  */
-const useAIService = (board: PiecesMapType, isFirstAI: boolean): { row: number, col: number } => {
+const useAIService = (board: PiecesMapType, isFirstAI: boolean, gameSetting: GameSetting): { row: number, col: number } => {
     // 将 Map 类型的前数据转换为数组结构
     const newBoads = convertToBoard(board);
     // 当前玩家类型
-    PLAYER_CURRENT = isFirstAI ? 'X' : 'O';
+    PLAYER_CURRENT = isFirstAI ? gameSetting.chessType[0] : gameSetting.chessType[1];
     // 对手玩家类型
-    PLAYER_OPPONENT = !isFirstAI ? 'X' : 'O';
+    PLAYER_OPPONENT = !isFirstAI ? gameSetting.chessType[0] : gameSetting.chessType[1];
     const emptyCells = getAvailableBoards(newBoads);
     // 检测当前棋盘是否存在一次就能赢的情况
-    if (emptyCells.length <= 5) {
+    if (emptyCells.length <= (gameSetting.directIsWinAI as number)) {
         for (const move of emptyCells) {
             const { row, col } = move;
             const piecesData = {
@@ -53,7 +53,7 @@ const useAIService = (board: PiecesMapType, isFirstAI: boolean): { row: number, 
             const tempBoard = new Map(board);
             tempBoard.set(JSON.stringify([row, col]), piecesData);
 
-            if (usePieces(tempBoard, 3, 3, [row, col])) {
+            if (usePieces(tempBoard, gameSetting.boardLength, gameSetting.victoryBaseReason, [row, col])) {
                 return { row, col };
             }
         }

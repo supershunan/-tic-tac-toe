@@ -54,14 +54,14 @@ class Board extends React.Component<BoardProps, BoardState> {
             if (this.props.gameMode) {
                 if (prevProps.squares !== this.props.squares && ((this.props.squares.size) % 2 === 0)) {
                     // AI先手
-                    const bestMove = useAIService(this.props.squares, true);
+                    const bestMove = useAIService(this.props.squares, true, this.props.gameSetting);
                     bestMove.row !== undefined && this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
                 }
             }
 
             if (!this.props.gameMode) {
                 if (prevProps.squares !== this.props.squares && (this.props.squares.size % 2 !== 0)) {
-                    const bestMove = useAIService(this.props.squares, false);
+                    const bestMove = useAIService(this.props.squares, false, this.props.gameSetting);
                     // 人类先手
                     bestMove.row !== undefined && this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
                 }

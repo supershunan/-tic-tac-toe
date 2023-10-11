@@ -39,16 +39,23 @@ const useAIService = (board: PiecesMapType, isFirstAI: boolean): { row: number, 
     PLAYER_CURRENT = isFirstAI ? 'X' : 'O';
     // 对手玩家类型
     PLAYER_OPPONENT = !isFirstAI ? 'X' : 'O';
-    // 如果出现一次就能赢的局面
     const emptyCells = getAvailableBoards(newBoads);
+    // 检测当前棋盘是否存在一次就能赢的情况
     if (emptyCells.length <= 5) {
         for (const move of emptyCells) {
             const { row, col } = move;
-            newBoads[row][col] = PLAYER_CURRENT;
-            if (usePieces(board, 3, 3, [row, col])) {
+            const piecesData = {
+                direction: [row, col],
+                content: PLAYER_CURRENT,
+                key: JSON.stringify([row, col]),
+            };
+            // 临时的 Map 棋盘，需要检测当前位置是不是有直接就可以赢的情况
+            const tempBoard = new Map(board);
+            tempBoard.set(JSON.stringify([row, col]), piecesData);
+
+            if (usePieces(tempBoard, 3, 3, [row, col])) {
                 return { row, col };
             }
-            newBoads[row][col] = EMPTY_CELL;
         }
     }
     const bestMove = minimax(newBoads, true, -Infinity, Infinity, DEPTH);
@@ -121,7 +128,7 @@ const isGameOver = (board: Array<Array<string>>): boolean => {
 };
 
 /**
- * 使用位运算法检查胜负（仅适用于井字棋）
+ *
  * @param board 棋盘数组
  * @returns string 获胜结果
  */

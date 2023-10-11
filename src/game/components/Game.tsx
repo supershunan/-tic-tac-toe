@@ -1,11 +1,9 @@
 import React from 'react';
 import { PiecesMapType } from '../type/index';
-import { GameProps, GameState, GameStore, HistoryState } from '../type/game'
+import { GameProps, GameState, GameStore, HistoryState } from '../type/game';
 import { connect } from 'react-redux';
 import { saveGameHistory } from '../../store/game/gameSlice';
 import Board from './Board';
-
-
 
 /**
  * redux 数据

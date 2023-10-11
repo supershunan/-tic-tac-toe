@@ -179,33 +179,67 @@ const evaluateBoard = (board: Array<Array<string>>): number => {
 };
 
 /**
- * 为当前玩家进行局面评估（仅适用于井字棋）
+ * 计算各个位置的评估分数
  * @param board 棋盘数组
  * @param player 玩家类型
  * @returns 当前玩家局面分数
  */
 const countsPlayer = (board: Array<Array<string>>, player: string): boardCountInfo => {
-    const counts = JSON.parse(JSON.stringify(BOARD_COUNT));
+    const counts = {
+        horizontal: [0, 0, 0],
+        vertical: [0, 0, 0],
+        diagonal: [0, 0],
+        cornerControl: 0,
+        centerControl: 0,
+    };
+    /**
+     * 计算当前方向的得分
+     * @param row
+     * @param col
+     * @param property 索引key
+     * @param value 数组的key
+     */
+    const addToCounts = (row: number, col: number, property: keyof typeof counts, value: number) => {
+        (counts[property] as number[])[value]++;
+    };
+
     for (let row = 0; row < 3; row++) {
         for (let col = 0; col < 3; col++) {
-            // 统计当前 player玩家在各行，各列，各对角线，对角以及中心上棋子总数
             if (board[row][col] === player) {
-                counts.horizontal[row]++;
-                counts.vertical[col]++;
-                if (row === col) counts.diagonal[0]++;
-                if (row + col === 2) counts.diagonal[1]++;
-                if ((row === 0 || row === 2) && (col === 0 || col === 2)) counts.cornerControl++;
-                if (row === 1 && col === 1) counts.centerControl++;
+                addToCounts(row, col, 'horizontal', row);
+                addToCounts(row, col, 'vertical', col);
+                if (row === col) {
+                    addToCounts(row, col, 'diagonal', 0);
+                }
+                if (row + col === 2) {
+                    addToCounts(row, col, 'diagonal', 1);
+                }
+                if ((row === 0 || row === 2) && (col === 0 || col === 2)) {
+                    counts.cornerControl++;
+                }
+                if (row === 1 && col === 1) {
+                    counts.centerControl++;
+                }
             }
         }
     }
-    let score = 0; // 计算分数
-    // 连线个数得分
-    score += counts.horizontal.reduce((acc: number, count: number) => acc + Math.pow(10, count), 0);
-    score += counts.vertical.reduce((acc: number, count: number) => acc + Math.pow(10, count), 0);
-    score += counts.diagonal.reduce((acc: number, count: number) => acc + Math.pow(10, count), 0);
-    score += 5 * counts.cornerControl; // 角落位置控制得分
-    score += 10 * counts.centerControl; // 中心位置控制得分
+
+    /**
+     *
+     * @param property 索引key
+     * @param factor 给评估值进行放大的倍数
+     * @returns number
+     */
+    const calculateScore = (property: keyof typeof counts, factor: number): number => {
+        return (counts[property] as number[]).reduce((acc: number, count: number) => acc + Math.pow(10, count), 0) * factor;
+    };
+
+    const score = calculateScore('horizontal', 1) +
+                 calculateScore('vertical', 1) +
+                 calculateScore('diagonal', 1) +
+                 (5 * counts.cornerControl) +
+                 (10 * counts.centerControl);
+
     return { counts, score };
 };
 

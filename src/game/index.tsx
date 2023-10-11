@@ -5,8 +5,6 @@ import '../App.less';
 import { connect } from 'react-redux';
 import { ChooseGameProps, ChooseGameState, GameStore } from './type/gameMain';
 
-
-
 /**
  * redux 数据
  * @returns

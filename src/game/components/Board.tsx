@@ -1,35 +1,10 @@
 import React from 'react';
-import { BoardProp, PiecesMapType } from '../type/index';
 import { connect } from 'react-redux';
 import usePieces from '../../hooks/usePieces';
 import useAIService from '../../hooks/useAIService';
 import Square from './Square';
+import { BoardProps, BoardState, GameStore } from '../type/board';
 
-type HistoryState = {
-    currentGameMove: number;
-    historyGameMap: Array<[string, { direction: Array<number>, content: string, key: string }]>;
-    jumpPlace: number;
-    gameType: string;
-}
-
-interface HistoryGameMap {
-    historyGameMap: {
-        [key: string]: HistoryState;
-    };
-}
-interface GameStore {
-    game: HistoryGameMap;
-}
-
-interface BoardProps extends BoardProp {
-    gameStore: HistoryGameMap;
-    gameMode: number;
-}
-interface BoardState {
-    historySquares: PiecesMapType | null;
-    currentPieceType: boolean | null;
-    winner: string | null | undefined;
-}
 
 /**
  * redux 数据
@@ -79,16 +54,16 @@ class Board extends React.Component<BoardProps, BoardState> {
             if (this.props.gameMode) {
                 if (prevProps.squares !== this.props.squares && ((this.props.squares.size) % 2 === 0)) {
                     // AI先手
-                    const bestMove = useAIService(this.props.squares, 'X', true);
-                    this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
+                    const bestMove = useAIService(this.props.squares, true);
+                    bestMove.row !== undefined && this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
                 }
             }
 
             if (!this.props.gameMode) {
                 if (prevProps.squares !== this.props.squares && (this.props.squares.size % 2 !== 0)) {
+                    const bestMove = useAIService(this.props.squares, false);
                     // 人类先手
-                    const bestMove = useAIService(this.props.squares, 'O', false);
-                    bestMove.col >= 0 && this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
+                    bestMove.row !== undefined && this.handleClick(JSON.stringify([bestMove.row, bestMove.col]), [bestMove.row, bestMove.col]);
                 }
             }
         }

@@ -59,4 +59,16 @@ const AIGames = [
         value: 'AI先手',
     },
 ];
-export { gameSettings, gameTypes, AIGames };
+
+/**
+ * AI 配置参数
+ */
+// 玩家局面分数评估
+const BOARD_COUNT = {
+    horizontal: [0, 0, 0], // 水平
+    vertical: [0, 0, 0],   // 垂直
+    diagonal: [0, 0],      // 对角线
+    cornerControl: 0,      // 控制的角落位置
+    centerControl: 0,      // 中心位置控制
+};
+export { gameSettings, gameTypes, AIGames, BOARD_COUNT };

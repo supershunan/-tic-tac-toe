@@ -1,38 +1,11 @@
 import React from 'react';
-import { GameSettings, PiecesMapType } from '../type/index';
+import { PiecesMapType } from '../type/index';
+import { GameProps, GameState, GameStore, HistoryState } from '../type/game'
 import { connect } from 'react-redux';
 import { saveGameHistory } from '../../store/game/gameSlice';
 import Board from './Board';
 
-type HistoryState = {
-    currentGameMove: number;
-    historyGameMap: Array<[string, { direction: Array<number>, content: string, key: string }]>;
-    jumpPlace: number;
-    gameType: string;
-    aiType?: number;
-}
 
-interface HistoryGameMap {
-    historyGameMap: {
-        [key: string]: HistoryState;
-    };
-}
-interface GameStore {
-    game: HistoryGameMap;
-}
-
-interface GameProps {
-    gameStore: HistoryGameMap;
-    gameSetting: GameSettings;
-    gameMode: number;
-    saveGameHistory: (data: HistoryState) => void;
-}
-
-interface GameState {
-    piecesMap: PiecesMapType;
-    currentMove: number;
-    jumpPlace: number;
-}
 
 /**
  * redux 数据

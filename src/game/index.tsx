@@ -1,43 +1,11 @@
 import React from 'react';
 import Game from './components/Game';
 import { gameSettings, AIGames } from '../game-setting';
-import { GameSettings } from './type';
 import '../App.less';
 import { connect } from 'react-redux';
+import { ChooseGameProps, ChooseGameState, GameStore } from './type/gameMain';
 
-/**
- * @param games 游戏配置
- * @param currentGame 当前游戏配置
- * @param aiGames AI游戏选择
- * @param currentGameMode 当前游戏模式,默认为玩家先手
- */
-interface ChooseGameState {
-    games: Array<GameSettings>;
-    currentGame: GameSettings;
-    aiGames: Array<{key: number, value: string}>;
-    currentGameMode: number;
-}
 
-interface ChooseGameProps {
-    gameStore: HistoryGameMap;
-}
-
-type HistoryState = {
-    currentGameMove: number;
-    historyGameMap: Array<[string, { direction: Array<number>, content: string, key: string }]>;
-    jumpPlace: number;
-    gameType: string;
-    aiType?: number;
-}
-
-interface HistoryGameMap {
-    historyGameMap: {
-        [key: string]: HistoryState;
-    };
-}
-interface GameStore {
-    game: HistoryGameMap;
-}
 
 /**
  * redux 数据

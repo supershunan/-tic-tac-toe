@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.less';
-import usePieces from './hooks/usePieces';
+// 测试一 ceshi er sici
 interface SquareProps {
     value: string | null;
     onSquareClick: () => void;

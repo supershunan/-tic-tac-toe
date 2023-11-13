@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.less';
-import usePieces from './hooks/usePieces';
+// 测试一 修改 app.js 文件
 interface SquareProps {
     value: string | null;
     onSquareClick: () => void;
